@@ -42,8 +42,8 @@ class Task(models.Model):
     content = models.CharField(_("Content"), max_length=200)
     start_date = models.DateField(_("Start date"))
     end_date = models.DateField(_("End date"))
-    status = models.CharField(_("Status"), choices=constants.TASK_STATUS_CHOICES, max_length=50)
-    stage_id = models.ForeignKey("Stage", on_delete=models.CASCADE)
+    status = models.IntegerField(_("Status"), choices=constants.TASK_STATUS_CHOICES, default=constants.TASK_STATUS_DEFAULT)
+    stage = models.ForeignKey(Stage, on_delete=models.CASCADE)
     user = models.ManyToManyField(User, verbose_name=_("User"), through='UserTask')
 
 

@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 from decouple import config
 from django.utils.translation import gettext_lazy as _
@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "app.apps.AppConfig",
+    
+    
 ]
 
 MIDDLEWARE = [
@@ -53,18 +55,18 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "projectmanagement.urls"
-
+STATIC_URL = 'static/'
 TEMPLATES = [
     {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
             ],
         },
     },
@@ -131,4 +133,4 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LANGUAGES = [("en", _("English")), ("vi", _("Vietnamese"))]
 
-LOCALE_PATHS = (str(BASE_DIR) + "locale/",)
+
