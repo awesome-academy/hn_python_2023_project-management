@@ -85,3 +85,10 @@ class ProjectListView(ListView):
     queryset = Project.objects.all()
     context_object_name = "project_list"
     template_name = "app/project_list.html"
+
+@login_required
+@user_passes_test(is_in_group)
+class delete_task(DeleteView):
+    model = Task
+    success_url = reverse_lazy("tasks")
+    

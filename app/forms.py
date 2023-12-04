@@ -32,4 +32,3 @@ class TaskForm(forms.ModelForm):
                 self.add_error('end_date', 'End date must be less than or equal to the end date of the stage.')
 
         return cleaned_data
-
