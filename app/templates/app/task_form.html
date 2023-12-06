@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+  <h1>{% trans "Update Task" %}</h1>
+  <div class="table-responsive">
+    <table class="table table-light mt-3">
+      <form method="post">
+        {% csrf_token %}
+        <tbody>
+          {{ form.as_table }}
+        </tbody>
+      </table>
+      <button type="submit" class="btn btn-primary">{% trans "Update Task" %}</button>
+      <button type="submit" class="btn btn-secondary" ><a href="{% url 'tasks' %}" >{% trans "Back to Tasks" %}</a></button>
+    </form>
+  </div>
+
+{% endblock %}

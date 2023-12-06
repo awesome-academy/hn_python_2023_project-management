@@ -14,7 +14,7 @@ from django.core.exceptions import PermissionDenied
 from django.core.mail import send_mail
 from django.db import transaction
 from django.forms import model_to_dict
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse,HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template import loader
 from django.urls import reverse, reverse_lazy
@@ -28,6 +28,8 @@ from django.views.generic.list import ListView
 from projectmanagement.settings import EMAIL_HOST_USER
 from .forms import SignupForm, TaskForm, StageUpdateForm, AddUserToProjectForm
 from .models import Task, Stage, Project, UserProject, CustomUser, UserStage
+from .forms import SignupForm, TaskForm, TaskStatusForm
+from .utils.helpers import check_token, is_pm, is_in_project, is_in_group,is_in_task, is_stage_member_or_pm
 from .utils import constants
 from .utils.helpers import (
     check_token,
@@ -140,18 +142,25 @@ def render_all_task(request):
     return HttpResponse(template.render(context, request))
 
 
-@user_passes_test(is_in_group)
 @login_required
-def create_task(request):
+def create_task(request, stage_id):
+    stage = get_object_or_404(Stage, pk=stage_id)
+    if not is_stage_member_or_pm(request.user, stage=stage):
+        return HttpResponseForbidden("You don't have permission to perform this action.")
+    
     if request.method == "POST":
-        form = TaskForm(request.POST)
+        form = TaskForm(request.POST, initial={'stage': stage})
         if form.is_valid():
-            form.save()
-            return redirect("tasks")
+            if form.cleaned_data['stage'] == stage:
+                
+                form.save()
+                return HttpResponse(_("Create task successfully"))
+            else:
+                form.add_error('stage', _('The selected stage does not match the provided stage.'))
     else:
-        form = TaskForm()
+        form = TaskForm(initial={'stage': stage})
 
-    return render(request, "create_task.html", {"form": form})
+    return render(request, "app/create_task.html", {"form": form, "stage_id": stage_id})
 
 
 @login_required
@@ -189,13 +198,13 @@ class ProjectDetail(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         return context
 
 
-@user_passes_test(is_in_group)
 @login_required
-def delete_task(request, pk):
-    success_url = reverse_lazy("tasks")
+def delete_task(request, pk):    
     task = get_object_or_404(Task, pk=pk)
-    task.delete()
-    return HttpResponse(_("Delete successfully"))
+    if is_stage_member_or_pm(request.user, task.stage):
+        task.delete()
+        return HttpResponse(_("Delete successfully"))
+    return HttpResponse(_("Delete Error"))
 
 
 class StageCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
@@ -219,10 +228,30 @@ class StageCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         stage.project = project
         stage.save()
 
-        UserStage.objects.create(user=user, stage=stage, role=constants.STAGE_OWNER)
+        UserStage.objects.create(
+            user=user,
+            stage=stage,
+            role=constants.STAGE_OWNER
+        )
+        return HttpResponseRedirect(reverse_lazy('project-detail', kwargs={'pk': project.pk}))
 
-        success_url = reverse("project-detail", kwargs={"pk": project_id})
-        return redirect(success_url)
+class TaskUpdate(LoginRequiredMixin, UpdateView):
+    model = Task
+    fields = ["content","start_date", "end_date", "status"]
+    success_url = reverse_lazy("tasks")
+    
+    def test_user_role(self):
+        task = self.get_object()
+        return is_stage_member_or_pm(user=self.request.user, stage=task.state)
+
+class TaskStatusUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Task
+    form_class = TaskStatusForm
+    template_name = "app/status_task.html"
+    success_url = reverse_lazy("tasks")
+
+    def test_func(self):
+        return is_in_task(user=self.request.user, task=self.get_object())
 
 
 class StageDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):

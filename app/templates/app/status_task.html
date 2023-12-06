@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+  <div class="container mt-4">
+    <h1 class="mb-4">{% trans "Update Task Status" %}</h1>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
+        {{ form.status }}
+      </div>
+      <button type="submit" class="btn btn-primary">{% trans "Save changes" %}</button>
+    </form>
+    <a href="{% url 'tasks' %}" class="btn btn-secondary mt-2">{% trans "Cancel" %}</a>
+  </div>
+{% endblock %}

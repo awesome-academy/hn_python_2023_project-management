@@ -1,5 +1,5 @@
 from . import constants
-from ..models import UserProject, UserStage
+from ..models import UserProject, UserStage,UserTask
 
 
 def is_in_group(user):
@@ -32,3 +32,6 @@ def is_stage_member_or_pm(user, stage):
 
 def is_pm_or_stage_owner(user, stage, project):
     return is_pm(user, project) or is_stage_owner(user, stage)
+
+def is_in_task(user, task):
+    return UserTask.objects.filter(user=user, task=task).exists()
