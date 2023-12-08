@@ -24,7 +24,7 @@
         {% if userstage_list %}
             <div class="row row-gap-4">
                 {% for userstage in userstage_list %}
-                    <div class="col-3" id="{{ userstage.user.pk }}">
+                    <div class="col-3" id="mem-{{ userstage.user.pk }}">
                         <div class="card text-bg-light mb-3">
                             <div class="card-header"><a class="fw-semibold"
                                                         href="#">{{ userstage.user.username }}</a>
@@ -39,7 +39,12 @@
                                         {% translate "Stage Owner" %}
                                     {% endif %}
                                 </p>
-                                <a href="#" class="btn btn-primary">{% translate "Delete" %}</a>
+                                <button class="btn btn-danger remove-member" data-stage-id="{{ stage_id }}"
+                                        data-url="{% url 'remove-member-from-stage' project_id stage_id %}"
+                                        data-user-id="{{ userstage.user.pk }}">
+                                    {% translate "Remove" %}
+                                    {% csrf_token %}
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -50,4 +55,8 @@
         {% endif %}
     </div>
 
+{% endblock %}
+{% block js %}
+    <script src="{% static 'sweetalert2/sweetalert2.js' %}"></script>
+    <script src="{% static 'js/remove_member_from_stage.js' %}"></script>
 {% endblock %}
