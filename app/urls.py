@@ -57,5 +57,9 @@ urlpatterns = [
         "<int:project_pk>/members/<int:user_pk>/delete",
         views.delete_member_from_project,
         name="delete-member-from-project",
+    path(
+        "<int:project_id>/stages/<int:pk>/member/remove/",
+        views.remove_member_from_stage,
+        name="remove-member-from-stage",
     ),
 ]

@@ -448,3 +448,25 @@ def delete_member_from_project(request, project_pk, user_pk):
         return HttpResponse(_("Delete successfully"))
     else:
         raise PermissionDenied()
+@login_required()
+def remove_member_from_stage(request, project_id, pk):
+    if is_pm_or_stage_owner(user=request.user, project=project_id, stage=pk):
+        if request.method == "POST":
+            user_id = request.POST.get("user_id")
+            stage_id = request.POST.get("stage_id")
+            UserStage.objects.filter(user_id=user_id, stage_id=stage_id).delete()
+            return JsonResponse(
+                {
+                    "message": _("Delete successfully"),
+                },
+                safe=False,
+                status=200,
+            )
+
+    return JsonResponse(
+        {
+            "message": _("You don't have permission to do this"),
+        },
+        safe=False,
+        status=403,
+    )
