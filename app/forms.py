@@ -4,7 +4,6 @@ from django import forms
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import gettext_lazy as _
-from .utils import constants
 
 from .models import Task, Stage, UserStage
 from .utils import constants
@@ -105,6 +104,22 @@ class SignupForm(forms.Form):
             is_active=False,
         )
         return user
+
+
+class StageCreateForm(forms.ModelForm):
+    user = forms.ModelChoiceField(queryset=User.objects.all(), label=_("Stage Owner"))
+
+    class Meta:
+        model = Stage
+        fields = ["name", "start_date", "end_date", "user"]
+
+    def __init__(self, *args, **kwargs):
+        project_id = kwargs.pop("project_id", None)
+        super(StageCreateForm, self).__init__(*args, **kwargs)
+
+        if project_id:
+            users_for_project = User.objects.filter(project__id=project_id)
+            self.fields["user"].queryset = users_for_project
 
 
 class StageUpdateForm(forms.ModelForm):

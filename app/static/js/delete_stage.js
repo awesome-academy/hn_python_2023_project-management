@@ -41,13 +41,12 @@ $(document).ready(function () {
                         `)
                         $('#num-stage').text(res.num_stages)
                         $(`#${remove_id}`).remove()
-
+                        swalWithBootstrapButtons.fire({
+                            title: "Deleted!",
+                            text: "Your stage has been deleted.",
+                            icon: "success"
+                        });
                     }
-                });
-                swalWithBootstrapButtons.fire({
-                    title: "Deleted!",
-                    text: "Your stage has been deleted.",
-                    icon: "success"
                 });
             } else if (
                 result.dismiss === Swal.DismissReason.cancel

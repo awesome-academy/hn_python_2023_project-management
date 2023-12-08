@@ -25,7 +25,13 @@ from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.list import ListView
 
 from projectmanagement.settings import EMAIL_HOST_USER
-from .forms import SignupForm, TaskForm, StageUpdateForm, AddUserToProjectForm
+from .forms import (
+    SignupForm,
+    TaskForm,
+    StageUpdateForm,
+    AddUserToProjectForm,
+    StageCreateForm,
+)
 from .models import Task, Stage, Project, UserProject, CustomUser, UserStage
 from .utils import constants
 from .utils.helpers import (
@@ -202,23 +208,25 @@ class StageCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return is_pm(self.request.user, self.kwargs.get("project_id"))
 
     model = Stage
-    fields = ["name", "start_date", "end_date", "user"]
+    form_class = StageCreateForm
 
-    def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-        form.fields["user"].label = "Stage Owner"
-
-        return form
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["project_id"] = self.kwargs.get("project_id")
+        return kwargs
 
     def form_valid(self, form):
         project_id = self.kwargs.get("project_id")
         project = get_object_or_404(Project, pk=project_id)
-        user = form.cleaned_data["user"].get()
+        user = form.cleaned_data["user"]
         stage = form.save(commit=False)
         stage.project = project
         stage.save()
 
         UserStage.objects.create(user=user, stage=stage, role=constants.STAGE_OWNER)
+        UserProject.objects.filter(user=user, project=project).update(
+            role=constants.STAGE_OWNER
+        )
 
         success_url = reverse("project-detail", kwargs={"pk": project_id})
         return redirect(success_url)
