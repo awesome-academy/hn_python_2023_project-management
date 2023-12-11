@@ -41,6 +41,9 @@ urlpatterns = [
         views.delete_stage,
         name="delete-stage",
     ),
+    path('task_update/<int:pk>', views.TaskUpdate.as_view(),name = "task_update"),
+    path('tasks/<int:pk>/update-status', views.TaskStatusUpdate.as_view(), name='task_status_update'),
+
     path("<int:pk>/addUser", views.AddUserToProject, name="add-user-to-project"),
     path(
         "<int:project_id>/stages/<int:pk>/member/",
