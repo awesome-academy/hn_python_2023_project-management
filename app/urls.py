@@ -52,4 +52,9 @@ urlpatterns = [
         views.add_member_to_stage,
         name="add-member-to-stage",
     ),
+    path(
+        "<int:project_id>/stages/<int:pk>/member/remove/",
+        views.remove_member_from_stage,
+        name="remove-member-from-stage",
+    ),
 ]
