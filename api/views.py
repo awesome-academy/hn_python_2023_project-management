@@ -18,7 +18,7 @@ from rest_framework.views import APIView
 
 from app.models import Project, UserProject, Stage, Task, UserStage
 from app.utils import constants
-from app.utils.helpers import send_mail_verification,is_in_project
+from app.utils.helpers import send_mail_verification,is_in_project,is_pm_or_stage_owner
 from .permissions import IsPM, IsPMOrProjectMember, IsPMOrStageOwner
 from .serializers import (
     SignUpSerializers,
@@ -30,7 +30,8 @@ from .serializers import (
     MemberProjectSerializer,
     AddMemberStageSerializers,
     UserStageSerializers,
-    TaskSerializer
+    TaskSerializer,
+    TaskCreateSerializers
 )
 
 
@@ -137,6 +138,25 @@ class TaskList(APIView):
             return paginator.get_paginated_response(data)
 
         return Response(status=status.HTTP_403_FORBIDDEN)
+    
+    @extend_schema(
+            request=TaskCreateSerializers,
+            responses=TaskCreateSerializers,
+    )
+    def post(self, request, project_id, stage_id):
+        project = get_object_or_404(Project, pk=project_id)
+        stage = get_object_or_404(Stage, pk=stage_id)
+        if is_pm_or_stage_owner(user=request.user, stage=stage, project=project):
+            request.data['stage'] = stage_id
+            serializer = TaskCreateSerializers(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response({'error': 'Không có quyền truy cập.'}, status=status.HTTP_403_FORBIDDEN) 
 
 
 class StageList(APIView, LimitOffsetPagination):
