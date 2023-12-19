@@ -343,3 +343,8 @@ class TaskSerializer(serializers.ModelSerializer):
   class Meta:
     model = Task
     fields = ('content', 'start_date', 'end_date','status','user')
+
+class TaskCreateSerializers(serializers.ModelSerializer):
+  class Meta:
+    model = Task
+    fields = ('content', 'start_date', 'end_date','status','stage','user')
